@@ -25,7 +25,7 @@ module "eks" {
   name    = "finops-eks"
   vpc_id  = module.vpc.vpc_id
   subnet_ids = module.vpc.private_subnets
-  cluster_version = "1.31"  # Specify an explicit Kubernetes version (e.g., 1.31, check AWS EKS supported versions)
+  kubernetes_version = "1.31"  # Changed from cluster_version to kubernetes_version
   enable_irsa = true
   enable_cluster_creator_admin_permissions = true
   eks_managed_node_groups = {
