@@ -1,6 +1,5 @@
-##########################################
+
 # VPC Module
-##########################################
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "5.1.1"
@@ -16,9 +15,8 @@ module "vpc" {
   }
 }
 
-##########################################
+
 # EKS Cluster Module (v21.3.2)
-##########################################
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "21.3.2"
