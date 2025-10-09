@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loan-service
+  labels:
+    app: loan
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: loan
+  template:
+    metadata:
+      labels:
+        app: loan
+    spec:
+      containers:
+      - name: loan
+        image: ngumonelson123/loan-service:latest
+        ports:
+        - containerPort: 7000
+        env:
+        - name: DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: vault-secrets
+              key: POSTGRES_HOST
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: vault-secrets
+              key: POSTGRES_USER
+        - name: DB_PASS
+          valueFrom:
+            secretKeyRef:
+              name: vault-secrets
+              key: POSTGRES_PASSWORD
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: loan-service
+spec:
+  type: ClusterIP
+  selector:
+    app: loan
+  ports:
+  - port: 7000
+    targetPort: 7000
