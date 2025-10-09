@@ -1,3 +1,7 @@
+provider "aws" {
+  region = "us-east-1"  # Ensure the region matches your intended EKS region
+}
+
 ##########################################
 # VPC Module
 ##########################################
@@ -25,7 +29,7 @@ module "eks" {
   name    = "finops-eks"
   vpc_id  = module.vpc.vpc_id
   subnet_ids = module.vpc.private_subnets
-  kubernetes_version = "1.31"  # Changed from cluster_version to kubernetes_version
+  kubernetes_version = "1.31"  # Ensure this is a supported version in your region
   enable_irsa = true
   enable_cluster_creator_admin_permissions = true
   eks_managed_node_groups = {
@@ -47,12 +51,12 @@ module "eks" {
 ##########################################
 data "aws_eks_cluster" "eks" {
   name = module.eks.cluster_name
-  depends_on = [module.eks]  # Ensure the cluster is created before fetching
+  depends_on = [module.eks]
 }
 
 data "aws_eks_cluster_auth" "eks" {
   name = module.eks.cluster_name
-  depends_on = [module.eks]  # Ensure the cluster is created before fetching
+  depends_on = [module.eks]
 }
 
 ##########################################

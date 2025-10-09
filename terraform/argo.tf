@@ -1,15 +1,14 @@
 ###################################
 # ArgoCD Installation via Helm
 ###################################
-
 resource "helm_release" "argocd" {
   name       = "argo-cd"
   repository = "https://argoproj.github.io/argo-helm"
   chart      = "argo-cd"
   namespace  = "argocd"
   create_namespace = true
+  version    = "7.6.7"  # Specify a recent chart version compatible with Kubernetes 1.31
 
-  # Make it easy to demo via HTTP (no ingress controller yet)
   values = [<<EOF
 configs:
   params:
@@ -20,13 +19,16 @@ server:
 EOF
   ]
 
-  depends_on = [module.eks]
+  depends_on = [
+    module.eks,
+    data.aws_eks_cluster.eks,
+    data.aws_eks_cluster_auth.eks
+  ]
 }
 
 ###################################
 # ArgoCD Application Definition
 ###################################
-
 resource "kubernetes_manifest" "finops_app" {
   manifest = {
     apiVersion = "argoproj.io/v1alpha1"
@@ -55,5 +57,10 @@ resource "kubernetes_manifest" "finops_app" {
     }
   }
 
-  depends_on = [helm_release.argocd]
+  depends_on = [
+    helm_release.argocd,
+    module.eks,
+    data.aws_eks_cluster.eks,
+    data.aws_eks_cluster_auth.eks
+  ]
 }
