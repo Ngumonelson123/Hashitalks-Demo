@@ -25,9 +25,3 @@ provider "aws" {
   region = var.region
 }
 
-# Define the region variable with a default value
-variable "region" {
-  description = "AWS region for deploying resources"
-  type        = string
-  default     = "us-east-1"  # Default to us-east-1 to match eks.tf and argo.tf
-}
