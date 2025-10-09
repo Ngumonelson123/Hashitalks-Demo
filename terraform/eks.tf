@@ -21,28 +21,31 @@ module "vpc" {
 }
 
 ##########################################
-# EKS Cluster Module (v21.3.2)
+# EKS Cluster Module (v22+ syntax)
 ##########################################
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "21.3.2"   # ✅ Available version confirmed
+  version = ">=22.0.0"
 
-  cluster_name    = "finops-eks"
-  cluster_version = "1.30"
+  cluster_name = "finops-eks" # legacy alias (optional)
+  
+  cluster = {
+    name                   = "finops-eks"
+    version                = "1.30"
+    endpoint_public_access = true
+  }
 
   vpc_id     = module.vpc.vpc_id
   subnet_ids = module.vpc.private_subnets
 
-  enable_irsa                              = true
   enable_cluster_creator_admin_permissions = true
-  cluster_endpoint_public_access           = true
+  enable_irsa                              = true
 
   eks_managed_node_groups = {
     default = {
-      ami_type       = "AL2_x86_64"
       instance_types = ["t3.medium"]
-      desired_size   = 2
       min_size       = 1
+      desired_size   = 2
       max_size       = 3
     }
   }
@@ -57,11 +60,11 @@ module "eks" {
 # EKS Cluster Authentication
 ##########################################
 data "aws_eks_cluster" "eks" {
-  name = module.eks.cluster_name
+  name = module.eks.cluster.cluster_name
 }
 
 data "aws_eks_cluster_auth" "eks" {
-  name = module.eks.cluster_name
+  name = module.eks.cluster.cluster_name
 }
 
 ##########################################
