@@ -1,7 +1,3 @@
-provider "aws" {
-  region = "us-east-1"  # Ensure the region matches your intended EKS region
-}
-
 ##########################################
 # VPC Module
 ##########################################
@@ -10,7 +6,7 @@ module "vpc" {
   version = "5.1.1"
   name    = "finops-vpc"
   cidr    = "10.0.0.0/16"
-  azs     = ["us-east-1a", "us-east-1b"]
+  azs     = ["${var.region}a", "${var.region}b"]  # Use var.region for consistency
   private_subnets = ["10.0.1.0/24", "10.0.2.0/24"]
   public_subnets  = ["10.0.3.0/24", "10.0.4.0/24"]
   enable_nat_gateway = true
@@ -29,7 +25,7 @@ module "eks" {
   name    = "finops-eks"
   vpc_id  = module.vpc.vpc_id
   subnet_ids = module.vpc.private_subnets
-  kubernetes_version = "1.31"  # Ensure this is a supported version in your region
+  kubernetes_version = "1.31"  # Ensure this is a supported version in the region
   enable_irsa = true
   enable_cluster_creator_admin_permissions = true
   eks_managed_node_groups = {
