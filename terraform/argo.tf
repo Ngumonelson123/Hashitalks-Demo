@@ -27,6 +27,17 @@ EOF
 }
 
 ###################################
+# Wait for EKS cluster to be ready
+###################################
+resource "null_resource" "wait_for_cluster" {
+  depends_on = [
+    module.eks,
+    data.aws_eks_cluster.eks,
+    data.aws_eks_cluster_auth.eks
+  ]
+}
+
+###################################
 # ArgoCD Application Definition
 ###################################
 resource "kubernetes_manifest" "finops_app" {
@@ -59,8 +70,6 @@ resource "kubernetes_manifest" "finops_app" {
 
   depends_on = [
     helm_release.argocd,
-    module.eks,
-    data.aws_eks_cluster.eks,
-    data.aws_eks_cluster_auth.eks
+    null_resource.wait_for_cluster
   ]
 }
