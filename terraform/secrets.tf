@@ -6,7 +6,7 @@ resource "aws_secretsmanager_secret" "finops_database" {
 resource "aws_secretsmanager_secret_version" "finops_database" {
   secret_id = aws_secretsmanager_secret.finops_database.id
   secret_string = jsonencode({
-    host     = module.rds.db_instance_endpoint
+    host     = aws_db_instance.rds.endpoint
     username = var.db_user
     password = var.db_password
   })
