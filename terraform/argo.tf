@@ -40,32 +40,31 @@ resource "null_resource" "wait_for_cluster" {
 ###################################
 # ArgoCD Application Definition
 ###################################
-resource "kubernetes_manifest" "finops_app" {
-  manifest = {
-    apiVersion = "argoproj.io/v1alpha1"
-    kind       = "Application"
-    metadata = {
-      name      = "finops-app"
-      namespace = "argocd"
-    }
-    spec = {
-      project = "default"
-      source = {
-        repoURL        = "https://github.com/Ngumonelson123/finops-kit.git"
-        targetRevision = "main"
-        path           = "k8s"
-      }
-      destination = {
-        server    = "https://kubernetes.default.svc"
-        namespace = "default"
-      }
-      syncPolicy = {
-        automated = {
-          prune    = true
-          selfHeal = true
-        }
-      }
-    }
+resource "null_resource" "finops_app" {
+  provisioner "local-exec" {
+    command = <<EOF
+aws eks update-kubeconfig --region ${var.region} --name ${module.eks.cluster_name}
+kubectl apply -f - <<YAML
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: finops-app
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Ngumonelson123/finops-kit.git
+    targetRevision: main
+    path: k8s
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+YAML
+EOF
   }
 
   depends_on = [
