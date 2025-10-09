@@ -22,9 +22,10 @@ module "vpc" {
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "21.3.2"
-  name    = "finops-eks"  # Changed from cluster_name to name
+  name    = "finops-eks"
   vpc_id  = module.vpc.vpc_id
   subnet_ids = module.vpc.private_subnets
+  cluster_version = "1.31"  # Specify an explicit Kubernetes version (e.g., 1.31, check AWS EKS supported versions)
   enable_irsa = true
   enable_cluster_creator_admin_permissions = true
   eks_managed_node_groups = {
@@ -46,10 +47,12 @@ module "eks" {
 ##########################################
 data "aws_eks_cluster" "eks" {
   name = module.eks.cluster_name
+  depends_on = [module.eks]  # Ensure the cluster is created before fetching
 }
 
 data "aws_eks_cluster_auth" "eks" {
   name = module.eks.cluster_name
+  depends_on = [module.eks]  # Ensure the cluster is created before fetching
 }
 
 ##########################################
