@@ -62,27 +62,21 @@ module "eks" {
 
 # EKS Addons - separate resources
 resource "aws_eks_addon" "vpc_cni" {
-  cluster_name = module.eks.cluster_name
-  addon_name   = "vpc-cni"
-  addon_version = "v1.18.1-eksbuild.3"
-  resolve_conflicts = "OVERWRITE"
-  depends_on = [module.eks]
+  cluster_name  = module.eks.cluster_name
+  addon_name    = "vpc-cni"
+  depends_on    = [module.eks]
 }
 
 resource "aws_eks_addon" "coredns" {
-  cluster_name = module.eks.cluster_name
-  addon_name   = "coredns"
-  addon_version = "v1.11.1-eksbuild.8"
-  resolve_conflicts = "OVERWRITE"
-  depends_on = [aws_eks_addon.vpc_cni]
+  cluster_name  = module.eks.cluster_name
+  addon_name    = "coredns"
+  depends_on    = [aws_eks_addon.vpc_cni]
 }
 
 resource "aws_eks_addon" "kube_proxy" {
-  cluster_name = module.eks.cluster_name
-  addon_name   = "kube-proxy"
-  addon_version = "v1.30.0-eksbuild.3"
-  resolve_conflicts = "OVERWRITE"
-  depends_on = [module.eks]
+  cluster_name  = module.eks.cluster_name
+  addon_name    = "kube-proxy"
+  depends_on    = [module.eks]
 }
 
 # Security Group for RDS access from EKS
