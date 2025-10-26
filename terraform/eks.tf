@@ -7,7 +7,7 @@ module "vpc" {
   cidr    = "10.0.0.0/16"
   azs     = ["${var.region}a", "${var.region}b"]  # Use var.region for consistency
   private_subnets = ["10.0.1.0/24", "10.0.2.0/24"]
-  public_subnets  = ["10.0.3.0/24", "10.0.4.0/24"]
+  public_subnets  = ["10.0.101.0/24", "10.0.102.0/24"]
   enable_nat_gateway = true
   single_nat_gateway = true
   tags = {
@@ -23,7 +23,7 @@ module "eks" {
   name    = "finops-eks"
   vpc_id  = module.vpc.vpc_id
   subnet_ids = module.vpc.private_subnets
-  kubernetes_version = "1.30"  # Use stable supported version
+  kubernetes_version = "1.29"  # Use more stable version
   enable_irsa = true
   enable_cluster_creator_admin_permissions = true
   
@@ -40,13 +40,16 @@ module "eks" {
   }
   eks_managed_node_groups = {
     default = {
-      desired_size   = 2
+      desired_size   = 1
       min_size       = 1
-      max_size       = 3
-      instance_types = ["t3.medium"]
+      max_size       = 2
+      instance_types = ["t3.small"]
       
       # Basic configuration only
       ami_type = "AL2_x86_64"
+      
+      # Explicit subnet assignment
+      subnet_ids = module.vpc.private_subnets
     }
   }
   # EKS Addons will be installed automatically by EKS
