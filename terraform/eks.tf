@@ -43,23 +43,14 @@ module "eks" {
       desired_size   = 2
       min_size       = 1
       max_size       = 3
-      instance_types = ["t3.small", "t3.medium"]
-      capacity_type  = "ON_DEMAND"
+      instance_types = ["t3.medium"]
       
-      # Ensure proper networking
-      subnet_ids = module.vpc.private_subnets
-      
-      # Add user data for debugging
-      enable_bootstrap_user_data = true
-      
-      # Taints and labels
-      taints = {}
-      labels = {
-        Environment = "demo"
-        NodeGroup   = "default"
-      }
+      # Basic configuration only
+      ami_type = "AL2_x86_64"
     }
   }
+  # EKS Addons will be installed automatically by EKS
+  
   tags = {
     Environment = "demo"
     Project     = "FinOps-Kit"
