@@ -43,7 +43,21 @@ module "eks" {
       desired_size   = 2
       min_size       = 1
       max_size       = 3
-      instance_types = ["t3.medium"]
+      instance_types = ["t3.small", "t3.medium"]
+      capacity_type  = "ON_DEMAND"
+      
+      # Ensure proper networking
+      subnet_ids = module.vpc.private_subnets
+      
+      # Add user data for debugging
+      enable_bootstrap_user_data = true
+      
+      # Taints and labels
+      taints = {}
+      labels = {
+        Environment = "demo"
+        NodeGroup   = "default"
+      }
     }
   }
   tags = {
