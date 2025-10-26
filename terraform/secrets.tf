@@ -1,41 +1,39 @@
-# Vault Secret Store for External Secrets Operator
-resource "kubernetes_manifest" "vault_secret_store" {
-  manifest = {
-    apiVersion = "external-secrets.io/v1beta1"
-    kind       = "SecretStore"
-    metadata = {
-      name      = "vault-backend"
-      namespace = "default"
-    }
-    spec = {
-      provider = {
-        vault = {
-          server = "http://vault.vault.svc.cluster.local:8200"
-          path   = "secret"
-          version = "v2"
-          auth = {
-            tokenSecretRef = {
-              name = "vault-token"
-              key  = "token"
-            }
-          }
-        }
-      }
-    }
-  }
-  depends_on = [helm_release.external_secrets, helm_release.vault]
-}
+# Create Vault SecretStore and token via kubectl
+resource "null_resource" "vault_secret_store" {
+  provisioner "local-exec" {
+    command = <<EOF
+set -e
+aws eks update-kubeconfig --region ${var.region} --name ${module.eks.cluster_name}
 
-# Vault token secret for External Secrets
-resource "kubernetes_secret" "vault_token" {
-  metadata {
-    name      = "vault-token"
-    namespace = "default"
+# Create vault token secret
+kubectl create secret generic vault-token --from-literal=token=root -n default --dry-run=client -o yaml | kubectl apply -f -
+
+# Create vault secret store
+kubectl apply -f - <<YAML
+apiVersion: external-secrets.io/v1beta1
+kind: SecretStore
+metadata:
+  name: vault-backend
+  namespace: default
+spec:
+  provider:
+    vault:
+      server: "http://vault.vault.svc.cluster.local:8200"
+      path: "secret"
+      version: "v2"
+      auth:
+        tokenSecretRef:
+          name: "vault-token"
+          key: "token"
+YAML
+EOF
   }
-  data = {
-    token = "root"
-  }
-  depends_on = [module.eks]
+  
+  depends_on = [
+    helm_release.external_secrets,
+    helm_release.vault,
+    kubernetes_job_v1.vault_init
+  ]
 }
 
 # IAM role for External Secrets Operator
