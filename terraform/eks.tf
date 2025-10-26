@@ -52,7 +52,21 @@ module "eks" {
       subnet_ids = module.vpc.private_subnets
     }
   }
-  # EKS Addons will be installed automatically by EKS
+  # EKS Addons - explicit CNI configuration
+  cluster_addons = {
+    vpc-cni = {
+      addon_version = "v1.18.1-eksbuild.3"
+      resolve_conflicts = "OVERWRITE"
+    }
+    coredns = {
+      addon_version = "v1.11.1-eksbuild.8"
+      resolve_conflicts = "OVERWRITE"
+    }
+    kube-proxy = {
+      addon_version = "v1.30.0-eksbuild.3"
+      resolve_conflicts = "OVERWRITE"
+    }
+  }
   
   tags = {
     Environment = "demo"
