@@ -1,6 +1,4 @@
-###################################
 # ArgoCD Installation via Helm
-###################################
 resource "helm_release" "argocd" {
   name       = "argo-cd"
   repository = "https://argoproj.github.io/argo-helm"
@@ -10,12 +8,11 @@ resource "helm_release" "argocd" {
   version    = "7.6.7"  # Specify a recent chart version compatible with Kubernetes 1.31
 
   values = [<<EOF
-configs:
-  params:
-    server.insecure: true
 server:
   service:
     type: LoadBalancer
+  config:
+    url: "https://argocd.${var.region}.elb.amazonaws.com"
 EOF
   ]
 
@@ -26,9 +23,7 @@ EOF
   ]
 }
 
-###################################
 # Wait for EKS cluster to be ready
-###################################
 resource "null_resource" "wait_for_cluster" {
   depends_on = [
     module.eks,
@@ -37,13 +32,14 @@ resource "null_resource" "wait_for_cluster" {
   ]
 }
 
-###################################
+
 # ArgoCD Application Definition
-###################################
 resource "null_resource" "finops_app" {
   provisioner "local-exec" {
     command = <<EOF
+set -e
 aws eks update-kubeconfig --region ${var.region} --name ${module.eks.cluster_name}
+kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=argocd-server -n argocd --timeout=300s
 kubectl apply -f - <<YAML
 apiVersion: argoproj.io/v1alpha1
 kind: Application
@@ -53,7 +49,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/Ngumonelson123/finops-kit.git
+    repoURL: https://github.com/your-username/Hashitalks-Demo.git
     targetRevision: main
     path: k8s
   destination:

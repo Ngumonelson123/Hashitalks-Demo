@@ -1,24 +1,37 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: account-service
+  name: loan-service
   labels:
-    app: account
+    app: loan
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: account
+      app: loan
   template:
     metadata:
       labels:
-        app: account
+        app: loan
     spec:
       containers:
-      - name: account
-        image: ngumonelson123/account-service:latest
+      - name: loan
+        image: ngumonelson123/loan-service:latest
         ports:
-        - containerPort: 8000
+        - containerPort: 7000
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 7000
+          initialDelaySeconds: 10
+          periodSeconds: 5
         env:
         - name: DB_HOST
           valueFrom:
@@ -35,15 +48,5 @@ spec:
             secretKeyRef:
               name: vault-secrets
               key: POSTGRES_PASSWORD
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: account-service
-spec:
-  type: ClusterIP
-  selector:
-    app: account
-  ports:
-  - port: 8000
-    targetPort: 8000
+        - name: DB_NAME
+          value: "finopsdb"

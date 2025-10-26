@@ -10,7 +10,6 @@ variable "db_password" {
   description = "Database password for RDS"
   type        = string
   sensitive   = true
-  default     = "FinOps2025"
 }
 
 variable "db_name" {

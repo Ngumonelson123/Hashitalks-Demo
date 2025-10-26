@@ -10,12 +10,17 @@ LOAN_URL = os.getenv("LOAN_URL")
 def home():
     return jsonify({"message": "FinOps API Gateway Running"})
 
+@app.route("/health")
+def health():
+    return jsonify({"status": "healthy"})
+
 @app.route("/summary")
 def summary():
     try:
         acc = requests.get(f"{ACCOUNT_URL}/accounts").json()
         loan = requests.get(f"{LOAN_URL}/loans").json()
         return jsonify({
+            "status": "success",
             "account_info": acc,
             "loan_info": loan
         })

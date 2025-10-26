@@ -4,18 +4,24 @@ resource "aws_db_subnet_group" "rds" {
 }
 
 resource "aws_db_instance" "rds" {
-  identifier        = "finops-postgres"
-  engine            = "postgres"
-  instance_class    = "db.t3.micro"
-  allocated_storage = 20
-  username          = var.db_user
-  password          = var.db_password
-  db_name           = var.db_name
-  db_subnet_group_name = aws_db_subnet_group.rds.name
-  skip_final_snapshot   = true
-  publicly_accessible   = false
+  identifier             = "finops-postgres"
+  engine                 = "postgres"
+  engine_version         = "15.7"
+  instance_class         = "db.t3.micro"
+  allocated_storage      = 20
+  username               = var.db_user
+  password               = var.db_password
+  db_name                = var.db_name
+  db_subnet_group_name   = aws_db_subnet_group.rds.name
+  vpc_security_group_ids = [aws_security_group.rds_sg.id]
+  skip_final_snapshot    = true
+  publicly_accessible    = false
+  backup_retention_period = 1
+  storage_encrypted      = true
 
   tags = {
-    Name = "FinOps-DB"
+    Name        = "FinOps-DB"
+    Environment = "demo"
+    Project     = "FinOps-Kit"
   }
 }
