@@ -16,67 +16,32 @@ module "vpc" {
 }
 
 
-# EKS Cluster Module (v21.3.2)
+# EKS Cluster Module (v21.3.2) - Fresh cluster
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "21.3.2"
-  name    = "finops-eks"
+  name    = "hashitalks-eks"  # New cluster name
   vpc_id  = module.vpc.vpc_id
   subnet_ids = module.vpc.private_subnets
-  kubernetes_version = "1.30"  # Keep current version (downgrades not allowed)
+  kubernetes_version = "1.29"  # Use older stable version
   enable_irsa = true
   enable_cluster_creator_admin_permissions = true
   
-  # Attach additional security group to nodes
-  node_security_group_additional_rules = {
-    ingress_self_all = {
-      description = "Node to node all ports/protocols"
-      protocol    = "-1"
-      from_port   = 0
-      to_port     = 0
-      type        = "ingress"
-      self        = true
-    }
-  }
+  # Minimal node group configuration
   eks_managed_node_groups = {
-    default = {
+    main = {
       desired_size   = 1
       min_size       = 1
-      max_size       = 2
-      instance_types = ["t3.small"]
-      
-      # Basic configuration only
+      max_size       = 1
+      instance_types = ["t3.medium"]
       ami_type = "AL2_x86_64"
-      
-      # Explicit subnet assignment
-      subnet_ids = module.vpc.private_subnets
     }
   }
-  # EKS Addons will be created separately
   
   tags = {
     Environment = "demo"
     Project     = "FinOps-Kit"
   }
-}
-
-# EKS Addons - separate resources
-resource "aws_eks_addon" "vpc_cni" {
-  cluster_name  = module.eks.cluster_name
-  addon_name    = "vpc-cni"
-  depends_on    = [module.eks]
-}
-
-resource "aws_eks_addon" "coredns" {
-  cluster_name  = module.eks.cluster_name
-  addon_name    = "coredns"
-  depends_on    = [aws_eks_addon.vpc_cni]
-}
-
-resource "aws_eks_addon" "kube_proxy" {
-  cluster_name  = module.eks.cluster_name
-  addon_name    = "kube-proxy"
-  depends_on    = [module.eks]
 }
 
 # Security Group for RDS access from EKS
