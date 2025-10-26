@@ -23,7 +23,7 @@ module "eks" {
   name    = "finops-eks"
   vpc_id  = module.vpc.vpc_id
   subnet_ids = module.vpc.private_subnets
-  kubernetes_version = "1.29"  # Use more stable version
+  kubernetes_version = "1.30"  # Keep current version (downgrades not allowed)
   enable_irsa = true
   enable_cluster_creator_admin_permissions = true
   
