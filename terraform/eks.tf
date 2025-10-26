@@ -52,26 +52,37 @@ module "eks" {
       subnet_ids = module.vpc.private_subnets
     }
   }
-  # EKS Addons - explicit CNI configuration
-  cluster_addons = {
-    vpc-cni = {
-      addon_version = "v1.18.1-eksbuild.3"
-      resolve_conflicts = "OVERWRITE"
-    }
-    coredns = {
-      addon_version = "v1.11.1-eksbuild.8"
-      resolve_conflicts = "OVERWRITE"
-    }
-    kube-proxy = {
-      addon_version = "v1.30.0-eksbuild.3"
-      resolve_conflicts = "OVERWRITE"
-    }
-  }
+  # EKS Addons will be created separately
   
   tags = {
     Environment = "demo"
     Project     = "FinOps-Kit"
   }
+}
+
+# EKS Addons - separate resources
+resource "aws_eks_addon" "vpc_cni" {
+  cluster_name = module.eks.cluster_name
+  addon_name   = "vpc-cni"
+  addon_version = "v1.18.1-eksbuild.3"
+  resolve_conflicts = "OVERWRITE"
+  depends_on = [module.eks]
+}
+
+resource "aws_eks_addon" "coredns" {
+  cluster_name = module.eks.cluster_name
+  addon_name   = "coredns"
+  addon_version = "v1.11.1-eksbuild.8"
+  resolve_conflicts = "OVERWRITE"
+  depends_on = [aws_eks_addon.vpc_cni]
+}
+
+resource "aws_eks_addon" "kube_proxy" {
+  cluster_name = module.eks.cluster_name
+  addon_name   = "kube-proxy"
+  addon_version = "v1.30.0-eksbuild.3"
+  resolve_conflicts = "OVERWRITE"
+  depends_on = [module.eks]
 }
 
 # Security Group for RDS access from EKS
