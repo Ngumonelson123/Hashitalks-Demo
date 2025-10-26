@@ -37,16 +37,6 @@ module "eks" {
       type        = "ingress"
       self        = true
     }
-    
-    # Allow LoadBalancer to reach services
-    ingress_cluster_api = {
-      description                = "Cluster API to node groups"
-      protocol                   = "tcp"
-      from_port                  = 443
-      to_port                    = 443
-      type                       = "ingress"
-      source_cluster_security_group = true
-    }
   }
   eks_managed_node_groups = {
     default = {
