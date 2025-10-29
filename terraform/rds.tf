@@ -6,7 +6,7 @@ resource "aws_db_subnet_group" "rds" {
 resource "aws_db_instance" "rds" {
   identifier             = "finops-postgres"
   engine                 = "postgres"
-  engine_version         = "15.4"
+  # engine_version will use default supported version
   instance_class         = "db.t3.micro"
   allocated_storage      = 20
   username               = var.db_user
