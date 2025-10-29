@@ -8,8 +8,10 @@ module "vpc" {
   azs     = ["${var.region}a", "${var.region}b"]  # Use var.region for consistency
   private_subnets = ["10.0.1.0/24", "10.0.2.0/24"]
   public_subnets  = ["10.0.101.0/24", "10.0.102.0/24"]
-  enable_nat_gateway = false  # Not needed for public subnet approach
-  map_public_ip_on_launch = true  # Auto-assign public IPs for EKS nodes
+  enable_nat_gateway = true   # Required for nodes to download images
+  enable_vpn_gateway = false
+  single_nat_gateway = true   # Cost optimization
+  map_public_ip_on_launch = true
   tags = {
     Name = "finops-vpc"
   }
@@ -22,10 +24,14 @@ module "eks" {
   version = "21.3.2"
   name    = "hashitalks-demo"  # New cluster name
   vpc_id  = module.vpc.vpc_id
-  subnet_ids = module.vpc.public_subnets  # Use public subnets
-  kubernetes_version = "1.29"  # Minimum version for EKS Auto Mode
+  subnet_ids = module.vpc.private_subnets  # Use private subnets for better security
+  kubernetes_version = "1.29"
   enable_irsa = true
   enable_cluster_creator_admin_permissions = true
+  
+  # Cluster endpoint configuration
+  cluster_endpoint_public_access = true
+  cluster_endpoint_private_access = true
   
   # Public subnet node group
   eks_managed_node_groups = {
@@ -35,7 +41,7 @@ module "eks" {
       max_size       = 1
       instance_types = ["t3.medium"]
       ami_type = "AL2_x86_64"
-      subnet_ids = module.vpc.public_subnets
+      subnet_ids = module.vpc.private_subnets
     }
   }
   
