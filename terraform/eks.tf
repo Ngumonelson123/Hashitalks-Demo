@@ -16,25 +16,26 @@ module "vpc" {
 }
 
 
-# EKS Cluster Module (v21.3.2) - Fresh cluster
+# EKS Cluster Module (v21.3.2) - Public subnet approach
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "21.3.2"
-  name    = "hashitalks-eks"  # New cluster name
+  name    = "hashitalks-demo"  # New cluster name
   vpc_id  = module.vpc.vpc_id
-  subnet_ids = module.vpc.private_subnets
-  kubernetes_version = "1.29"  # Use older stable version
+  subnet_ids = module.vpc.public_subnets  # Use public subnets
+  kubernetes_version = "1.28"  # Use most stable version
   enable_irsa = true
   enable_cluster_creator_admin_permissions = true
   
-  # Minimal node group configuration
+  # Public subnet node group
   eks_managed_node_groups = {
-    main = {
+    public = {
       desired_size   = 1
       min_size       = 1
       max_size       = 1
       instance_types = ["t3.medium"]
       ami_type = "AL2_x86_64"
+      subnet_ids = module.vpc.public_subnets
     }
   }
   
